@@ -8,31 +8,46 @@ HttpClient client = new();
 CardService cardService = new();
 
 
-var result = JObject.Parse(await client.GetStringAsync("https://randomuser.me/api?result=50"));
-var name = (Uri.EscapeUriString(result["results"][0]["name"]["first"].ToString()));
-var surname = (Uri.EscapeUriString(result["results"][0]["name"]["last"].ToString()));
-var phone = (Uri.EscapeUriString(result["results"][0]["phone"].ToString()));
-var email = (Uri.EscapeUriString(result["results"][0]["email"].ToString()));
-var gender = (Uri.EscapeUriString(result["results"][0]["gender"].ToString()));
-var country = (Uri.EscapeUriString(result["results"][0]["location"]["country"].ToString()));
-var city = (Uri.EscapeUriString(result["results"][0]["location"]["city"].ToString()));
-Console.WriteLine(name + " " + surname + phone + email + country + city);
-
-
-var obj = new Card
+try
 {
-    First = name,
-    Last = surname,
-    Phone = phone,
-    Email = email,
-    Country = country,
-    City = city,
-    Gender = gender
+    var results = JObject.Parse(await client.GetStringAsync("https://randomuser.me/api?results=50"));
+    for (int i = 0; i < results["results"].ToArray().Length; i++)
+    {
+        var first = results["results"][i]["name"]["first"].ToString();
+        var last = results["results"][i]["name"]["last"].ToString();
+        var email = results["results"][i]["email"].ToString();
+        var phone = results["results"][i]["phone"].ToString();
+        var country = results["results"][i]["location"]["country"].ToString();
+        var city = results["results"][i]["location"]["city"].ToString();
+        var gender = results["results"][i]["gender"].ToString();
 
-};
 
-var res = await cardService.CreateAsync(obj);
-Console.WriteLine(res);
+        Card obj = new()
+        {
+            First = first,
+            Last = last,
+            Email = email,
+            City = city,
+            Country = country,
+            Phone = phone,
+            Gender = gender
+        };
+        var res = await cardService.CreateAsync(obj);
+        Console.WriteLine(res);
+    }
+
+    return;
+
+}
+catch (Exception ex)
+{
+    Console.WriteLine("There was a problem connecting to a server, Please try again!");
+    return;
+}
+
+
+
+
 
 
 
